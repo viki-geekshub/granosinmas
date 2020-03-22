@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define('Order', {
     UserId: {
       allowNull: false,
+      unique: true,  // NO FUNCIONA - Habria que hacerlo a mano en el phpMyAdmin
       type: DataTypes.INTEGER
     },
     deliveryDate: DataTypes.DATE,

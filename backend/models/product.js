@@ -1,6 +1,11 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Product = sequelize.define('Product', {
+    code:{
+      allowNull: false,   // FALTA QUE SEA UNICA ESTA COLUMNA
+      unique: true,  // NO FUNCIONA - Habria que hacerlo a mano en el phpMyAdmin
+      type: DataTypes.STRING
+    },
     name: {
       allowNull: false, // añado NOT NULL a los campos que no pueden estar vacíos
       type: DataTypes.STRING
