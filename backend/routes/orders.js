@@ -7,8 +7,8 @@ router.get('/',OrderController.getAll);
 router.get('/:id',OrderController.getOne); 
 router.post('/',OrderController.insert);
 router.post('/many',OrderController.insertMany);
-// router.delete('/many/',OrderController.deleteMany) // no se borran los pedidos
-// router.delete('/:id',OrderController.delete)
+router.delete('/many',OrderController.deleteMany) // no se borran los pedidos
+router.delete('/:id',OrderController.delete)
 router.put('/:id',OrderController.put);
 
 

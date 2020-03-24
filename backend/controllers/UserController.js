@@ -1,10 +1,40 @@
-const { User, Order } = require('../models/index.js') 
+const { User, Order, Sequelize } = require('../models/index.js') 
+const { Op } = Sequelize;
 const UserController = { 
     getAll(req,res){  
         User.findAll({
             include:[Order]  
         })
         .then(users=>res.status(200).send(users))
+    },
+    getOne(req, res) { 
+        User.findByPk(req.params.id, {
+                include: [Order]
+            })
+            .then(user => res.send(user))
+    },
+    getAllByName(req, res) { 
+        User.findAll({  
+                where: {  
+                    name: {
+                        [Op.like]: `%${req.params.name}%` 
+                    }  
+                },
+                include: [Order]
+            })
+            .then(user => res.send(user))
+    },
+    registerUser(req,res) { // Función para registrar un usuario // NO FUNCIONA
+        User.create({...req.body})
+        .then(user=> res.send({
+            message: 'Usuario registrado correctamente.', user
+        }))
+        .catch(error=>{
+            console.log(error)
+            res.status(500).send({message: 'Ha surgido un error al intentar registrar el usuario.', error
+            })
+        })
+        
     }
     // insert(req,res){ 
     //     User.create({...req.body})

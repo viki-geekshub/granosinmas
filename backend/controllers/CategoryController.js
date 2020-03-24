@@ -1,4 +1,4 @@
-const { Category, Product, Sequelize } = require('../models/index.js') ;
+const { Category, Product, ProductCategory, Sequelize } = require('../models/index.js') ;
 const { Op } = Sequelize;
 const CategoryController = { 
     getAll(req,res){  
@@ -34,32 +34,40 @@ const CategoryController = {
             .then(category => res.send(category))
     },
     insert(req,res){ 
-        Category.create({
-            code:req.body.code,
-            name:req.body.name})
-        .then(res.status(201).send({
-            message: "La nueva categoría se ha creado correctamente."
-        }))
+        Category.create({...req.body}) 
+        .then(category=>{
+            category.addProduct(req.body.ProductId) 
+            res.status(201).send({
+                message: "La nueva categoría ha sido añadida correctamente.", category
+            }) 
+        })
         .catch(error=> {
             console.log(error);
             res.status(500).send({
-                message: 'Ha habido un error al intentar crear la nueva categoría.'
+                message: 'Ha habido un error al intentar añadir la nueva categoría.'
             })
         })
     },
-    insertMany(req,res){
-        Category.bulkCreate([...req.body])
-        .then(category=> res.status(201).send({
-            message: 'Las nuevas categorías se han creado correctamente.'
-        }))
-        .catch(error=> {
+    async insertMany(req,res){  
+        try {
+          const categories =req.body;
+          const categoriesResponse =[]
+          categories.forEach(async category=>{
+            const categoryCreated = await Category.create({...category}); 
+            categoryCreated.addProduct(category.ProductId);
+            categoriesResponse.push(categoryCreated)
+          });
+          res.send({
+              message: 'Las nuevas categorías han sido añadidas.', categories
+          })    
+        } catch (error) {
             console.log(error);
             res.status(500).send({
-                message: 'Ha habido un error al intentar crear las nuevas categorias.'
+                message: 'Ha habido un error al intentar añadir las nuevas categorías.'
             })
-        })
+        }           
     },
-    put(req,res){ 
+    put(req,res){ // FALTA QUE AÑADA LOS CAMBIOS EN LA TABLA INTERMEDIA
         Category.update({...req.body},{where: {id:req.params.id}})
         .then(category => {
             Category.findByPk(req.params.id)
@@ -74,15 +82,22 @@ const CategoryController = {
             })
         })
     },
-     delete(req,res){  
-        Category.destroy({ 
+    delete(req,res){   
+        Category.destroy({
             where:{
-                id:req.params.id
+                id:req.params.id 
             }  
-        })
-        .then(res.status(200).send({
+        }) 
+        .then(()=>{
+            ProductCategory.destroy({
+                where:{
+                    CategoryId:req.params.id 
+                }  
+            }) 
+            res.status(200).send({
             message: "La categoría ha sido eliminada."
-        })) 
+        })
+    })
         .catch(error=> {
             console.log(error);
             res.status(500).send({
@@ -91,16 +106,25 @@ const CategoryController = {
         })
     },
     deleteMany(req,res){  
-        Category.destroy({ 
+        Category.destroy({
             where:{
                 id:{
-                    [Op.in]:req.body.id   
+                    [Op.in]:req.body.id
                 }
             }  
         })
-        .then(res.status(200).send({
-            message: "Las categorías han sido eliminadas."
-        })) 
+        .then(()=>{
+            ProductCategory.destroy({
+                where:{
+                    CategoryId:{
+                        [Op.in]:req.body.id
+                    }
+                }  
+            }) 
+            res.status(200).send({
+                message: "Las categorías han sido eliminadas."
+        })
+    }) 
         .catch(error=> {
             console.log(error);
             res.status(500).send({
