@@ -4,6 +4,7 @@ const { Product, Category, ProductCategory, Sequelize, sequelize } = require('..
 // Importo Product, porque necesito el modelo product para funcionar en OrderProduct (lo vamos a llamar muchas veces y si no se importa no lo encuentra.
 // Importo Category porque necesito incluir las categorías en cada producto
 // También importo el Sequelize para que me permita utilizar los operadores de Sequelize que me harán falta después en funciones posteriores
+// Importo el sequelize para que me admita el código sql puro que tengo implementado en el put
 const { Op } = Sequelize; // Desestruturo los operadores de sequelize aquí
 
 const ProductController = { // Creo la función controladora que tiene dentro varias funciones o metodos para hacer diferentes cosas
@@ -12,12 +13,20 @@ const ProductController = { // Creo la función controladora que tiene dentro va
             include:[Category]  // Aquí le digo que cuando me busque la información del producto, me incluya también la información de la tabla de categorías, ya que ambas tablas están relacionadas. 
         })
         .then(products=>res.status(200).send(products)) // Aquí envío lo obtenido con el .findAll en la respuesta
+        .catch(error=>{
+            console.log(error);
+            res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+        })
     },
     getOne(req, res) { // Función para buscar un solo producto por su id
         Product.findByPk(req.params.id, {
                 include: [Category]
             })
             .then(product => res.send(product))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     getOneByCode(req, res) { // Función para buscar un producto por su code
         Product.findOne({  
@@ -27,6 +36,10 @@ const ProductController = { // Creo la función controladora que tiene dentro va
             include: [Category]
         })
         .then(product => res.send(product))
+        .catch(error=>{
+            console.log(error);
+            res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+        })
     },
     getAllByName(req, res) {  // Función para buscar un producto por su nombre
         Product.findAll({  // Esto es como decirle: sequelize.query(`SELECT * FROM products WHERE name LIKE '%${req.params.name}%'`)
@@ -38,6 +51,10 @@ const ProductController = { // Creo la función controladora que tiene dentro va
                 include: [Category]
             })
             .then(product => res.send(product))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     insert(req,res){ // Función para insertar un producto 
         Product.create({...req.body}) // Aquí le digo que me cree cada producto con sus propiedades dentro, las que nos vengan en el body de la petición

@@ -6,12 +6,20 @@ const CategoryController = {
             include:[Product]   
         })
         .then(categories=>res.status(200).send(categories))
+        .catch(error=>{
+            console.log(error);
+            res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+        })
     },
     getOne(req, res) { 
         Category.findByPk(req.params.id, {
                 include: [Product]
             })
             .then(category => res.send(category))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     getOneByCode(req, res) { 
         Category.findOne({  
@@ -21,6 +29,10 @@ const CategoryController = {
             include: [Product]
         })
         .then(category => res.send(category))
+        .catch(error=>{
+            console.log(error);
+            res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+        })
     },
     getAllByName(req, res) { 
         Category.findAll({  
@@ -32,6 +44,10 @@ const CategoryController = {
                 include: [Product]
             })
             .then(category => res.send(category))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     insert(req,res){ 
         Category.create({...req.body}) 

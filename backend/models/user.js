@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     email: {
       allowNull: false,
+      unique: true,  // NO FUNCIONA - Habria que hacerlo a mano en el phpMyAdmin
       type: DataTypes.STRING
     },
     password: {

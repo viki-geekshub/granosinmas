@@ -6,12 +6,20 @@ const OrderController = {                   // Importo Product, porque necesito 
             include:[Product]   // Aquí le digo que cuando me busque la información del pedido, me incluya también la información de la tabla de productos, ya que ambas tablas están relacionadas. 
         })
         .then(orders=>res.status(200).send(orders))  
+        .catch(error=>{
+            console.log(error);
+            res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+        })
     },
     getOne(req, res) { 
         Order.findByPk(req.params.id, {
                 include: [Product]
             })
             .then(order => res.send(order))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     // EN PEDIDOS NO TENEMOS CODIGO NI NOMBRE. SOLO BUSCARÍAMOS POR ID
 
@@ -83,104 +91,110 @@ const OrderController = {                   // Importo Product, porque necesito 
             })
         }
     },
-    // async put(req, res) { // NO FUNCIONA, LO BORRA TODO Y NO HACE EL CREATE
-    //     try{
-    //         await Order.update({...req.body},
-    //             {
-    //                 where: {
-    //                     id: req.params.id
-    //                 }
-    //             })
-    //         await OrderProduct.destroy({
-    //                 where: {
-    //                     OrderId: req.params.id
-    //                 }
+    async put(req, res) { // NO FUNCIONA, LO BORRA TODO Y NO HACE EL CREATE
+        try{
+            await Order.update({...req.body},
+                {
+                    where: {
+                        id: req.params.id
+                    }
+                })
+            await OrderProduct.destroy({
+                    where: {
+                        OrderId: req.params.id
+                    }
                 
-    //         })
-    //         await OrderProduct.create({OrderId:req.params.id,
-    //                 ProductId:req.body.products[0]
-    //         })
-    //         res.status(201).send({message:'Tu pedido han sido modificado'})
+            })
+            req.body.products.forEach( product =>{
+                OrderProduct.create({
+                    OrderId: req.params.id,
+                    ProductId: product.ProductId,
+                    productUnits: product.productUnits
+                })
+                
+            })
+            res.send({message:'Tu pedido han sido modificado.'})
+            
+        } catch{(error=> {
+                    console.log(error);
+                     res.status(500).send({
+                        message: 'Ha habido un error al intentar modificar tu pedido.'
+                    })
+                })          
 
-    //     } catch{(error=> {
-    //                 console.log(error);
-    //                  res.status(500).send({
-    //                     message: 'Ha habido un error al intentar modificar tu pedido.'
-    //                 })
-    //             })          
-
-    //     }
-    // },     
+        }
+    },     
 
     // HACER QUE SOLO PUEDA SER MODIFICADO POR EL ADMIN   
 
-    put(req,res){ 
-        Order.update({...req.body},{where: {id:req.params.id}})
-        .then(order => { // NO FUNCIONA, NO HACE LOS CAMBIOS EN LA TABLA INTERMEDIA
-            Order.findByPk(req.params.id)})
-        .then(order=>{OrderProduct.update({...req.body},{where:{ OrderId:req.params.id}}),
-           res.status(200).send({
-            message: "El pedido se ha modificado correctamente."}) 
+    // put(req,res){ 
+    //     Order.update({...req.body},{where: {id:req.params.id}})
+    //     .then(order => { // NO FUNCIONA, NO HACE LOS CAMBIOS EN LA TABLA INTERMEDIA
+    //         Order.findByPk(req.params.id)})
+    //     .then(order=>{OrderProduct.update({...req.body},{where:{ OrderId:req.params.id}}),
+    //        res.status(200).send({
+    //         message: "El pedido se ha modificado correctamente."}) 
             
-        })
-        .catch(error=> {
-            console.log(error);
-             res.status(500).send({
-                message: 'Ha habido un error al intentar modificar el pedido.'
-            })
-        })            
-    },
+    //     })
+    //     .catch(error=> {
+    //         console.log(error);
+    //          res.status(500).send({
+    //             message: 'Ha habido un error al intentar modificar el pedido.'
+    //         })
+    //     })            
+    // },
 
-    // NO SE VAN A PODER BORRAR LOS PEDIDOS - EN TODO CASO SE CAMBIARÁ EL STATUS // ESTAS DOS FUNCIONES SE TERMINARAN BORRANDO
-    delete(req,res){  
-        Order.destroy({
-            where:{
-                id:req.params.id 
-            }  
-        }) 
-        .then(()=>{
-            OrderProduct.destroy({
-                where:{
-                    OrderId:req.params.id 
-                }  
-            }) 
-            res.status(200).send({
-            message: "El pedido ha sido eliminado."
-        })
-    })
-        .catch(error=> {
-            console.log(error);
-            res.status(500).send({
-                message: 'Ha habido un error al intentar eliminar el pedido.'
-            })
-        })
-    },
-    deleteMany(req,res){  
-        Order.destroy({
-            where:{
-                id:{
-                    [Op.in]:req.body.id
-                }
-            }  
-        })
-        .then(()=>{
-            OrderProduct.destroy({
-                where:{
-                    OrderId:{
-                        [Op.in]:req.body.id
-                    }
-                }  
-            }) 
-            res.status(200).send({
-            message: "Los pedidos han sido eliminados."
-        })
-    }) 
-        .catch(error=> {
-            console.log(error);
-            res.status(500).send({
-                message: 'Ha habido un error al intentar eliminar los pedidos.'
-            })
-        })
-    }    
+    // NO SE VAN A PODER BORRAR LOS PEDIDOS - EN TODO CASO SE CAMBIARÁ EL STATUS 
+    
+    // delete(req,res){  
+    //     Order.destroy({
+    //         where:{
+    //             id:req.params.id 
+    //         }  
+    //     }) 
+    //     .then(()=>{
+    //         OrderProduct.destroy({
+    //             where:{
+    //                 OrderId:req.params.id 
+    //             }  
+    //         }) 
+    //         res.status(200).send({
+    //         message: "El pedido ha sido eliminado."
+    //     })
+    // })
+    //     .catch(error=> {
+    //         console.log(error);
+    //         res.status(500).send({
+    //             message: 'Ha habido un error al intentar eliminar el pedido.'
+    //         })
+    //     })
+    // },
+    // deleteMany(req,res){  
+    //     Order.destroy({
+    //         where:{
+    //             id:{
+    //                 [Op.in]:req.body.id
+    //             }
+    //         }  
+    //     })
+    //     .then(()=>{
+    //         OrderProduct.destroy({
+    //             where:{
+    //                 OrderId:{
+    //                     [Op.in]:req.body.id
+    //                 }
+    //             }  
+    //         }) 
+    //         res.status(200).send({
+    //         message: "Los pedidos han sido eliminados."
+    //     })
+    // }) 
+    //     .catch(error=> {
+    //         console.log(error);
+    //         res.status(500).send({
+    //             message: 'Ha habido un error al intentar eliminar los pedidos.'
+    //         })
+    //     })
+    // }    
 }
 module.exports = OrderController; 

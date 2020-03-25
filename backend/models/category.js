@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Category = sequelize.define('Category', {
     code:{
       allowNull: false,   // FALTA QUE SEA UNICO ESTA COLUMNA
+      unique: true,  // NO FUNCIONA - Habria que hacerlo a mano en el phpMyAdmin
       type: DataTypes.STRING
     },
     name: {

@@ -7,7 +7,7 @@ router.get('/',UserController.getAll)
 router.get('/name/:name',UserController.getAllByName);
 router.get('/:id',UserController.getOne);
 
-router.post('/register',UserController.registerUser); // Creo la ruta para registrar un usuario (REGISTRO)
+router.post('/',UserController.registerUser); // Creo la ruta para registrar un usuario (REGISTRO)
 
 // router.post('/',UserController.insert)
 // router.post('/many',UserController.insertMany)

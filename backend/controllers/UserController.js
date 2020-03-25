@@ -6,12 +6,20 @@ const UserController = {
             include:[Order]  
         })
         .then(users=>res.status(200).send(users))
+        .catch(error=>{
+            console.log(error);
+            res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+        })
     },
     getOne(req, res) { 
         User.findByPk(req.params.id, {
                 include: [Order]
             })
             .then(user => res.send(user))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     getAllByName(req, res) { 
         User.findAll({  
@@ -23,6 +31,10 @@ const UserController = {
                 include: [Order]
             })
             .then(user => res.send(user))
+            .catch(error=>{
+                console.log(error);
+                res.status(500).send({message: 'Ha surgido un error al intentar tramitar la petición.', error})
+            })
     },
     registerUser(req,res) { // Función para registrar un usuario // NO FUNCIONA
         User.create({...req.body})
