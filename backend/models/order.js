@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define('Order', {
     UserId: {
-      allowNull: false,
+      allowNull: false, // FALTA AQUI QUE ESTO LO META EL MIDDLEWARE AUTOMATICAMENTE
       unique: true,  // NO FUNCIONA - Habria que hacerlo a mano en el phpMyAdmin
       type: DataTypes.INTEGER
     },

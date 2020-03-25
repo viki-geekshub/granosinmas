@@ -91,61 +91,41 @@ const OrderController = {                   // Importo Product, porque necesito 
             })
         }
     },
-    async put(req, res) { // NO FUNCIONA, LO BORRA TODO Y NO HACE EL CREATE
+    // HACER QUE SOLO PUEDA SER MODIFICADO POR EL ADMIN 
+    async put(req, res) { 
         try{
-            await Order.update({...req.body},
+            await Order.update({...req.body}, 
                 {
                     where: {
-                        id: req.params.id
+                        id: req.params.id  
                     }
                 })
-            await OrderProduct.destroy({
+            await OrderProduct.destroy({ 
                     where: {
-                        OrderId: req.params.id
-                    }
-                
+                        OrderId: req.params.id 
+                    }    
             })
-            req.body.products.forEach( product =>{
-                OrderProduct.create({
+            req.body.products.forEach(product =>{  
+                OrderProduct.create({  
                     OrderId: req.params.id,
                     ProductId: product.ProductId,
                     productUnits: product.productUnits
-                })
-                
+                })    
             })
-            res.send({message:'Tu pedido han sido modificado.'})
+            res.send({message:'El pedido ha sido modificado.'})
             
         } catch{(error=> {
                     console.log(error);
                      res.status(500).send({
-                        message: 'Ha habido un error al intentar modificar tu pedido.'
+                        message: 'Ha habido un error al intentar modificar el pedido.'
                     })
                 })          
 
         }
     },     
-
-    // HACER QUE SOLO PUEDA SER MODIFICADO POR EL ADMIN   
-
-    // put(req,res){ 
-    //     Order.update({...req.body},{where: {id:req.params.id}})
-    //     .then(order => { // NO FUNCIONA, NO HACE LOS CAMBIOS EN LA TABLA INTERMEDIA
-    //         Order.findByPk(req.params.id)})
-    //     .then(order=>{OrderProduct.update({...req.body},{where:{ OrderId:req.params.id}}),
-    //        res.status(200).send({
-    //         message: "El pedido se ha modificado correctamente."}) 
-            
-    //     })
-    //     .catch(error=> {
-    //         console.log(error);
-    //          res.status(500).send({
-    //             message: 'Ha habido un error al intentar modificar el pedido.'
-    //         })
-    //     })            
-    // },
-
-    // NO SE VAN A PODER BORRAR LOS PEDIDOS - EN TODO CASO SE CAMBIARÁ EL STATUS 
-    
+      
+    // LO COMENTO PORQUE NO SE VAN A PODER BORRAR LOS PEDIDOS EN NINGÚN CASO - EN TODO CASO SE CAMBIARÁ EL STATUS    
+   
     // delete(req,res){  
     //     Order.destroy({
     //         where:{

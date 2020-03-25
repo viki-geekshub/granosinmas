@@ -10,6 +10,7 @@ module.exports = {
       },
       UserId: {
         allowNull: false,
+        unique: true,
         type: Sequelize.INTEGER
       },
       deliveryDate: {

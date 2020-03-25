@@ -4,8 +4,8 @@ const { Product, Category, ProductCategory, Sequelize, sequelize } = require('..
 // Importo Product, porque necesito el modelo product para funcionar en OrderProduct (lo vamos a llamar muchas veces y si no se importa no lo encuentra.
 // Importo Category porque necesito incluir las categorías en cada producto
 // También importo el Sequelize para que me permita utilizar los operadores de Sequelize que me harán falta después en funciones posteriores
-// Importo el sequelize para que me admita el código sql puro que tengo implementado en el put
-const { Op } = Sequelize; // Desestruturo los operadores de sequelize aquí
+// Aquí quise importar también el "sequelize" para que me admitiese código sql puro pero como al final no lo tuve que utilizar, se puede borrar, porque ya no me hace falta importarlo.
+const { Op } = Sequelize; // Desestruturo los operadores de sequelize aquí para poderlos utilizar luego
 
 const ProductController = { // Creo la función controladora que tiene dentro varias funciones o metodos para hacer diferentes cosas
     getAll(req,res){  // Función para traerme todos los productos de la base de datos. 
@@ -90,64 +90,43 @@ const ProductController = { // Creo la función controladora que tiene dentro va
             })
         }           
     },
-    // put(req,res){   // Función para modificar un producto
-    //     Product.update({
-    //         where:{
-    //             id:req.params.id 
-    //         }  
-    //     }) 
-    //     .then(()=>{
-    //         ProductCategory.update({
-    //             where:{
-    //                 ProductId:req.params.id 
-    //             }  
-    //         }) 
-    //         res.status(200).send({
-    //         message: "El producto ha sido modificado."
-    //     })
-    // })
-    //     .catch(error=> {
-    //         console.log(error);
-    //         res.status(500).send({
-    //             message: 'Ha habido un error al intentar modificar el producto.'
-    //         })
-    //     })
-    // },
-    put(req,res){  // Función para modificar la información de la base de datos  
-        Product.update({...req.body},{where: {id:req.params.id}})
-        .then(product => {   // NO FUNCIONA, NO CAMBIA LA INFO DE LA TABLA INTERMEDIA 
-            if(req.body.CategoryId) {
-                sequelize.query(`DELETE FROM CategoryId WHERE CategoryId = ${req.params.id}`);
-                product.addCategory(req.body.CategoryId);
-            }
-            if(req.body.OrderId) {
-                sequelize.query(`DELETE FROM OrderId WHERE OrderId = ${req.params.id}`);
-                product.addOrder(req.body.OrderId);
-            }
-            res.status(200).send({
-                message: "El producto ha sido modificado correctamente.", product
-            })
-        })
-        // .then(product => {
-        //     Product.findByPk(req.params.id)
-        //     res.status(200).send({
-        //         message: "El producto ha sido modificado correctamente."
-        //     })
-        // })
-        .catch(error=> {
-            console.log(error);
-            res.status(500).send({
-                message: 'Ha habido un error al intentar modificar el producto.'
-            })
-        })
-    },
+    async put(req, res) { 
+        try{
+            await Product.update({...req.body}, // Primero modifico los datos de la tabla Products
+                {
+                    where: {
+                        id: req.params.id  // diciendole que modifique solo el del id que corresponda
+                    }
+                })
+            await ProductCategory.destroy({ // Despues le digo que me borre los datos de la tabla intermedia ProductCategory
+                    where: {
+                        ProductId: req.params.id // donde el id sea el que corresponda
+                    }    
+                })
+            await req.body.categories.forEach(category =>{  // Luego recorro la tabla categories y para cada caategoria, 
+                ProductCategory.create({  //le digo que me cree, en la tabla intermedia ProductCategory, los siguientes campos:
+                    ProductId: req.params.id, // El id del producto lo coge de los parametros de la url
+                    CategoryId: category  // y el id de las categorias lo coge de categories, el cual ha sido recorrido con el forEach para darnos sus valores.
+                })    
+             })
+            res.send({message:'Tu producto ha sido modificado.'})
+            
+        } catch{(error=> {
+                    console.log(error);
+                     res.status(500).send({
+                        message: 'Ha habido un error al intentar modificar tu pedido.'
+                    })
+                })          
+
+        }
+    },     
     delete(req,res){   // Función para borrar un producto
-        Product.destroy({
+        Product.destroy({  // Aquí borra los datos de la tabla Productos
             where:{
                 id:req.params.id 
             }  
         }) 
-        .then(()=>{
+        .then(()=>{ // y aquí los datos de la tabla intermedia ProductCategory
             ProductCategory.destroy({
                 where:{
                     ProductId:req.params.id 
@@ -168,8 +147,8 @@ const ProductController = { // Creo la función controladora que tiene dentro va
         Product.destroy({
             where:{
                 id:{
-                    [Op.in]:req.body.id
-                }
+                    [Op.in]:req.body.id  // Con esto cogemos el id de varios productos a la vez utilizando el operador "in" de sequelize. 
+                }       // para poder utilizar el Op. in hemos tenido que importar previamente en la parte superior el Sequelize, el cual hemos desestructurado { Op }
             }  
         })
         .then(()=>{

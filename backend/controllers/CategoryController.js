@@ -83,7 +83,7 @@ const CategoryController = {
             })
         }           
     },
-    put(req,res){ // FALTA QUE AÑADA LOS CAMBIOS EN LA TABLA INTERMEDIA
+    put(req,res){  // NO CAMBIA LOS DATOS DE LA TABLA INTERMEDIA PORQUE NO ES NECESARIO. (Para cambiar categorias se cambiarán cambiandoselas a cada producto)
         Category.update({...req.body},{where: {id:req.params.id}})
         .then(category => {
             Category.findByPk(req.params.id)
